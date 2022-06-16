@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as myNewID } from "uuid";
 
 import "./App.css";
@@ -20,11 +20,28 @@ const buttons = [
 ];
 
 function App() {
-  const [searchTerm, setSearchTerm] = useState('');
+  
   const [itemToDo, setItemToDo] = useState("");
-  const [items, setItems] = useState(JSON.parse(localStorage.getItem('storageItems')));
-
+  const [items, setItems] = useState([]);
   const [filterType, setFilterType] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isChanged,setChanged] = useState(false);
+
+  useEffect(() => {
+    const itemsNew = JSON.parse(localStorage.getItem('todo'));
+    if (itemsNew) {
+     setItems(itemsNew);
+    }
+  }, []);
+
+  useEffect(() => {
+    if(isChanged){
+      localStorage.setItem('todo', JSON.stringify(items));
+      setChanged(false);
+    }
+  }, [isChanged, items]);
+
+
 
   const handleToDoChange = (event) => {
     setItemToDo(event.target.value);
@@ -34,8 +51,8 @@ function App() {
     const newItem = { key: myNewID(), label: itemToDo };
 
     setItems((prevElement) => [newItem, ...prevElement]);
-    localStorage.setItem('storageItems', JSON.stringify([newItem, ...items]))
 
+    setChanged(true);
     setItemToDo("");
   };
 
@@ -65,7 +82,7 @@ function App() {
 
   const deleteItem = ({key}) => {
     setItems(items.filter((item) => item.key != key));
-    localStorage.setItem('storageItems', JSON.stringify(items.filter((item) => item.key != key)))
+    setChanged(true);
   };
 
   const moreToDo = items.filter((item) => !item.done).length;
@@ -103,13 +120,13 @@ function App() {
   // localStorage.setItems('user', rememberMe ? user : '');
   // var storedItems = JSON.parse(localStorage.getItems("names"));
 
-  window.onload = function() {
-    const storageItems = []
-    for (let i = 0; i < localStorage.length; i++) { 
-      storageItems.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
-    }
-    setItems(items);
-  };
+  // window.onload = function() {
+  //   const storageItems = []
+  //   for (let i = 0; i < localStorage.length; i++) { 
+  //     storageItems.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
+  //   }
+  //   setItems(items);
+  // };
   
 
   return (
